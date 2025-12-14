@@ -1,27 +1,37 @@
+# Gamma Hedging ABM (Mesa): short-gamma vs long-gamma
+
+Agent-based simulation of a single risky asset where heterogeneous traders generate order flow and an option dealer may hedge using **delta-change hedging** (gamma feedback). The goal is to compare tail risk and crash behavior across **short-gamma**, **long-gamma**, and **no-hedge** regimes.
+
+---
 
 ## What the model does
 
-The simulation evolves a single risky asset price over `T_STEPS` discrete time steps. At each step:
+The simulation evolves a single risky asset price over `T_STEPS` discrete steps. At each step:
 
 1. Agents submit signed order flow into an aggregate demand variable `Q`.
 2. A **dealer** may hedge an option position using **delta-change hedging**:
    - Compute Black–Scholes delta and gamma for a call option.
    - Compute `net_delta_t = option_position * delta_t`.
-   - Trade proportional to the delta change `d_delta = net_delta_t - net_delta_{t-1}`:
+   - Trade proportional to delta change:
+     - `d_delta = net_delta_t - net_delta_{t-1}`
      - `hedge_order_t = - intensity * d_delta`
 3. The market converts total order flow into a **log-price change** with price impact + exogenous noise:
    - `dlogS = clip( impact * Q + exog_noise , -MAX_DLOGS, +MAX_DLOGS )`
 4. A rare **liquidity shock** can temporarily multiply price impact.
 
-The key mechanism: in **short-gamma**, the dealer’s hedging can become *positive feedback* (trend-following), potentially increasing tail risk and crash frequency. In **long-gamma**, hedging is more stabilizing.
+**Key mechanism:** in **short-gamma**, dealer hedging can become *positive feedback* (trend-following), increasing tail risk and crash frequency. In **long-gamma**, hedging is more stabilizing.
+
+---
 
 ## Scenarios
 
-The experiments compare three regimes:
+Experiments compare three regimes:
 
 - **short_gamma**: dealer is net short options (negative gamma exposure) and hedges with higher intensity.
 - **long_gamma**: dealer is net long options (positive gamma exposure) and hedges with lower intensity.
 - **no_hedge**: dealer holds an option position but hedging intensity is set to zero.
+
+---
 
 ## Hypotheses tested
 
@@ -30,13 +40,15 @@ Return distribution under short-gamma differs in shape from long-gamma (tails / 
 
 **H2 (Flash crashes, PRIMARY):**  
 Short-gamma produces more **volatility-adjusted crash events** than long-gamma.  
-Crash event definition:  
+Crash event definition:
 \[
 r_t < z \cdot \mathrm{rolling\_std}_{W}(r), \quad z=-3.0,\; W=50
 \]
 
 **H3 (Tail risk via drawdowns):**  
 Short-gamma has deeper maximum drawdowns than long-gamma.
+
+---
 
 ## Crash definitions used
 
@@ -46,6 +58,8 @@ Two crash counters are computed per simulated path:
    - `r_t < CRASH_Z * rolling_std_CRASH_Z_WIN(r)`
 2. **Secondary (absolute crashes)**: fixed threshold  
    - `r_t < FLASH_CRASH_ABS`
+
+---
 
 ## Outputs (per path)
 
@@ -57,6 +71,8 @@ Each simulated path produces:
 - `crashes_abs`: count of absolute crashes (secondary)
 - `kurtosis`: return kurtosis (Pearson, i.e., `fisher=False`)
 
+---
+
 ## Statistical tests
 
 The notebook / `analysis.py` applies robust two-sample and multi-sample tests:
@@ -67,18 +83,28 @@ The notebook / `analysis.py` applies robust two-sample and multi-sample tests:
 - Anderson–Darling k-sample test
 - Additional proxy: Welch t-test on **per-path kurtosis**
 
-### H2 (crashes_z, primary)
-- Mann–Whitney U test (one-sided: short > long)
-- Welch t-test (difference in means)
+### H2 (crash counts)
+- Mann–Whitney U (one-sided: short > long) on `crashes_z`
+- Welch t-test on `crashes_z`
 - Kruskal–Wallis test across (short, long, no_hedge)
-- Binary comparison: probability of **any crash** (Fisher exact or Chi-square)
+- Binary test for “any crash occurred”: Chi-square or Fisher exact (fallback)
 
-### H3 (max drawdown)
-- Mann–Whitney U test (one-sided: short < long, i.e., more negative drawdowns)
-- Welch t-test
-- KS test
-- Kruskal–Wallis across 3 groups
-- Optional: Levene test for variance differences
+### H3 (drawdowns)
+- Mann–Whitney U (one-sided: short < long) on `max_drawdown`
+- Welch t-test on `max_drawdown`
+- KS test on drawdown distributions
+- Kruskal–Wallis across (short, long, no_hedge)
+- (Optional) Levene test for variance differences
 
-All tests use a default significance level `ALPHA = 0.05`.
+---
 
+## Repository structure
+
+project/
+agents.py # agent classes (noise, fundamental, momentum, dealer)
+market.py # parameters, pricing/impact update helpers, crash metrics
+model.py # Mesa Model + run_one_path / run_experiments
+analysis.py # statistical tests for H1–H3
+visualization.py # plots (paths, histograms, crash marks, etc.)
+main.ipynb # experiments / demo notebook
+README.md
