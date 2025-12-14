@@ -1,4 +1,4 @@
-# Gamma Hedging ABM (Mesa): short-gamma vs long-gamma
+# Flash Crashes and Delta/Gamma Hedging:How Hedging Creates Systemic Risk
 
 Agent-based simulation of a single risky asset where heterogeneous traders generate order flow and an option dealer may hedge using **delta-change hedging** (gamma feedback). The goal is to compare tail risk and crash behavior across **short-gamma**, **long-gamma**, and **no-hedge** regimes.
 
@@ -100,11 +100,12 @@ The notebook / `analysis.py` applies robust two-sample and multi-sample tests:
 
 ## Repository structure
 
+```text
 project/
-agents.py # agent classes (noise, fundamental, momentum, dealer)
-market.py # parameters, pricing/impact update helpers, crash metrics
-model.py # Mesa Model + run_one_path / run_experiments
-analysis.py # statistical tests for H1–H3
-visualization.py # plots (paths, histograms, crash marks, etc.)
-main.ipynb # experiments / demo notebook
-README.md
+├── agents.py        # agent classes (noise, fundamental, momentum, dealer)
+├── market.py        # parameters, pricing/impact update helpers, crash metrics
+├── model.py         # Mesa Model + run_one_path / run_experiments
+├── analysis.py      # statistical tests for H1–H3
+├── visualization.py # plots (paths, histograms, crash marks, etc.)
+├── main.ipynb       # experiments / demo notebook
+└── README.md
