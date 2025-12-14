@@ -82,11 +82,3 @@ The notebook / `analysis.py` applies robust two-sample and multi-sample tests:
 
 All tests use a default significance level `ALPHA = 0.05`.
 
-## How to run
-
-### 1) Install dependencies
-
-From the repo root:
-
-```bash
-pip install -r requirements.txt
