@@ -40,10 +40,6 @@ Return distribution under short-gamma differs in shape from long-gamma (tails / 
 
 **H2 (Flash crashes, PRIMARY):**  
 Short-gamma produces more **volatility-adjusted crash events** than long-gamma.  
-Crash event definition:
-\[
-r_t < z \cdot \mathrm{rolling\_std}_{W}(r), \quad z=-3.0,\; W=50
-\]
 
 **H3 (Tail risk via drawdowns):**  
 Short-gamma has deeper maximum drawdowns than long-gamma.
